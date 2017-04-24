@@ -47,7 +47,7 @@
 //
 // class declaration
 //
-template<class IPTag, class SVTag>
+template<typename IPTag, typename SVTag>
 class TemplatedDeepNNTagInfoProducer : public edm::stream::EDProducer<> {
 public:
   explicit TemplatedDeepNNTagInfoProducer(const edm::ParameterSet&);
@@ -76,7 +76,7 @@ private:
 //
 // constructors and destructor
 //
-template<class IPTag, class SVTag>
+template<typename IPTag, typename SVTag>
 TemplatedDeepNNTagInfoProducer<IPTag,SVTag>::TemplatedDeepNNTagInfoProducer(const edm::ParameterSet& iConfig) :
   svSrc_( consumes<std::vector<SVTag> >(iConfig.getParameter<edm::InputTag>("svTagInfos")) ),
   computer_(iConfig.getParameter<edm::ParameterSet>("computer"))
@@ -84,7 +84,7 @@ TemplatedDeepNNTagInfoProducer<IPTag,SVTag>::TemplatedDeepNNTagInfoProducer(cons
   produces<std::vector<reco::ShallowTagInfo> >();
 }
 
-template<class IPTag, class SVTag>
+template<typename IPTag, typename SVTag>
 TemplatedDeepNNTagInfoProducer<IPTag,SVTag>::~TemplatedDeepNNTagInfoProducer()
 {
 
@@ -99,7 +99,7 @@ TemplatedDeepNNTagInfoProducer<IPTag,SVTag>::~TemplatedDeepNNTagInfoProducer()
 //
 
 // ------------ method called to produce the data  ------------
-template<class IPTag, class SVTag>
+template<typename IPTag, typename SVTag>
 void TemplatedDeepNNTagInfoProducer<IPTag,SVTag>::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
   // get input TagInfos
@@ -139,7 +139,7 @@ void TemplatedDeepNNTagInfoProducer<IPTag,SVTag>::produce(edm::Event& iEvent, co
 }
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
-template<class IPTag, class SVTag>
+template<typename IPTag, typename SVTag>
 void TemplatedDeepNNTagInfoProducer<IPTag,SVTag>::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   //The following says we do not know what parameters are allowed so do no validation
   // Please change this to state exactly what you do use, even if it is no parameters
