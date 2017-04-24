@@ -60,7 +60,6 @@ private:
   virtual void endStream() override {}
   
   // ----------member data ---------------------------
-  const edm::EDGetTokenT<std::vector<IPTag> > ipSrc_;
   const edm::EDGetTokenT<std::vector<SVTag> > svSrc_;
   CombinedSVComputer computer_;
 };
@@ -79,7 +78,6 @@ private:
 //
 template<class IPTag, class SVTag>
 TemplatedDeepNNTagInfoProducer<IPTag,SVTag>::TemplatedDeepNNTagInfoProducer(const edm::ParameterSet& iConfig) :
-  ipSrc_( consumes<std::vector<IPTag> >(iConfig.getParameter<edm::InputTag>("trackIPTagInfos")) ),
   svSrc_( consumes<std::vector<SVTag> >(iConfig.getParameter<edm::InputTag>("svTagInfos")) ),
   computer_(iConfig.getParameter<edm::ParameterSet>("computer"))
 {
@@ -105,9 +103,6 @@ template<class IPTag, class SVTag>
 void TemplatedDeepNNTagInfoProducer<IPTag,SVTag>::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
   // get input TagInfos
-  edm::Handle<std::vector<IPTag> > trackIPTagInfos;
-  iEvent.getByToken(ipSrc_, trackIPTagInfos);
-  
   edm::Handle<std::vector<SVTag> > svTagInfos;
   iEvent.getByToken(svSrc_, svTagInfos);
 
@@ -115,31 +110,29 @@ void TemplatedDeepNNTagInfoProducer<IPTag,SVTag>::produce(edm::Event& iEvent, co
   auto tagInfos = std::make_unique<std::vector<reco::ShallowTagInfo> >();
   
   // loop over TagInfos
-  for(auto iterTI = svTagInfos->begin(); iterTI != svTagInfos->end(); ++iterTI) {//svTI
+  for(auto iterTI = svTagInfos->begin(); iterTI != svTagInfos->end(); ++iterTI) {
+    // get TagInfos
     const SVTag & svTagInfo = *(iterTI);
-    //Yet to implement this for PFCandidates
-    //const IPTag & ipInfo = *(iterTI->trackIPTagInfoRef().get());
-    for(auto iterIP = trackIPTagInfos->begin(); iterIP != trackIPTagInfos->end(); ++iterIP) {//trackTI    
-      const IPTag & ipInfo = *(iterIP);
-      reco::TaggingVariableList vars = computer_(ipInfo, svTagInfo);
-      std::vector<float> tagValList = vars.getList(reco::btau::trackEtaRel,false);
-      vars.insert(reco::btau::jetNTracksEtaRel, tagValList.size());
-      tagValList = vars.getList(reco::btau::trackSip2dSig,false);
-      vars.insert(reco::btau::jetNSelectedTracks, tagValList.size());
-      vars.finalize(); //fix the TaggingVariableList, nothing should be added/removed
-      
-      //If not SV found set it to 0, not to non-existent
-      if(!vars.checkTag(reco::btau::jetNSecondaryVertices))
-	vars.insert(reco::btau::jetNSecondaryVertices, 0);
-      if(!vars.checkTag(reco::btau::vertexNTracks))
-	vars.insert(reco::btau::vertexNTracks, 0);
-      
-      tagInfos->emplace_back(
-			     vars,
-			     svTagInfo.jet()
-			     );    
-    }//trackTI
-  }//svTI
+    const IPTag & ipInfo = *(iterTI->trackIPTagInfoRef().get());
+    
+    reco::TaggingVariableList vars = computer_(ipInfo, svTagInfo);
+    std::vector<float> tagValList = vars.getList(reco::btau::trackEtaRel,false);
+    vars.insert(reco::btau::jetNTracksEtaRel, tagValList.size());
+    tagValList = vars.getList(reco::btau::trackSip2dSig,false);
+    vars.insert(reco::btau::jetNSelectedTracks, tagValList.size());
+    vars.finalize(); //fix the TaggingVariableList, nothing should be added/removed
+    
+    //If not SV found set it to 0, not to non-existent
+    if(!vars.checkTag(reco::btau::jetNSecondaryVertices))
+      vars.insert(reco::btau::jetNSecondaryVertices, 0);
+    if(!vars.checkTag(reco::btau::vertexNTracks))
+      vars.insert(reco::btau::vertexNTracks, 0);
+    
+    tagInfos->emplace_back(
+			   vars,
+			   svTagInfo.jet()
+			   );    
+  }
 
   // put the output in the event
   iEvent.put( std::move(tagInfos) );

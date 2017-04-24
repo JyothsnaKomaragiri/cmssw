@@ -3,7 +3,6 @@ from RecoBTag.SecondaryVertex.combinedSecondaryVertexCommon_cff import combinedS
 
 pfDeepCSVTagInfos = cms.EDProducer(
 	'DeepNNTagInfoProducer',
-        trackIPTagInfos = cms.InputTag('pfImpactParameterTagInfos'),
 	svTagInfos = cms.InputTag('pfInclusiveSecondaryVertexFinderTagInfos'),
 	computer = combinedSecondaryVertexCommon
 	)
